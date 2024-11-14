@@ -1,66 +1,3 @@
-
-# Accorgimenti OPSEC
-
-```
-# Change User Agents
---script-args http.useragent="some ua"
-
-# Change default value on `/usr/share/nmap/nselib/http.lua`
-`local USER_AGENT = stdnse.get_script_args('http.useragent') or "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; WOW64; Trident/5.0)"`
-```
-
-# Metodologia di scansione
-
-- Prendi in input IP o subnet o file con host 
-- Scansione degli host per trovare quelli alive
-- Scansione degli host alive trovati su tutte le porte per individuare porte aperte 
-- Scansione approfondita delle porte aperte per trovare le specifiche dei singoli servizi
-
-```
-## ALIVE HOSTS (no ping)
-nmap -sn -PR 192.168.1.0/24
-nmap -sn -PR --max-retries 2 --host-timeout 5s --scan-delay 10ms --spoof-mac Apple --randomize-hosts 192.168.1.0/24
-
-###‏ Find open ports TCP/SYN
-nmap -sS -Pn $H
-nmap -sS -Pn -g 21 --spoof-mac Apple --scan-delay 5ms --randomize-hosts --data-length 16 $H
-nmap -sS -Pn --source-port 1024-65535 --spoof-mac Apple -T2 --randomize-hosts --data-length 16 -f $H
-
-### Find open ports UDP
-nmap -sU -Pn x.x.x.x
-nmap -sU -Pn -g 21 --spoof-mac Apple --scan-delay 5ms --randomize-hosts --data-length 16 $H
-nmap -sU -Pn --source-port 1024-65535 --spoof-mac Apple -T2 --randomize-hosts --data-length 16 -f $H
-
-###‏ Scan found ports TCP/SYN
-nmap -sS -Pn -A -p $P $H
-nmap -sS -Pn -sC -sV -g 21 --spoof-mac Apple --scan-delay 5ms --randomize-hosts --data-length 16 -p $P $H
-nmap -sS -Pn -sV --source-port 1024-65535 --spoof-mac Apple -T2 --randomize-hosts --data-length 16 -f -p $P $H
-
-### Scan found ports UDP
-nmap -sU -Pn -A -p $P $H
-nmap -sU -Pn -sC -sV -g 21 --spoof-mac Apple --scan-delay 5ms --randomize-hosts --data-length 16 -p $P $H
-nmap -sU -Pn -sV --source-port 1024-65535 --spoof-mac Apple -T2 --randomize-hosts --data-length 16 -f -p $P $H
-```
-
-```
-Test extra 
-
-# Se serve sapere se delle porte sono filtrate o no dal firewall possiamo usare una scansione ACK
-
-### TCP/ACK
-nmap -sA -Pn $H
-nmap -sA -g 21 --spoof-mac Apple --scan-delay 5ms --randomize-hosts --data-length 16 -p 80,443,22 $H
-nmap -sA --source-port 1024-65535 --spoof-mac Apple -T2 --randomize-hosts --data-length 16 -f -p 80,443,22 $H
-```
-# Nmap Scanner
-
-```
-./scanner.sh -t 3 -i 192.168.1.1
-./scanner.sh -i 192.168.1.1/24
-./scanner.sh -t 1 -f hosts.txt
-```
-
-```
 #!/bin/bash
 
 # Funzione per mostrare l'uso dello script
@@ -234,4 +171,3 @@ done < alive_hosts.txt
 while IFS= read -r host; do
     deep_scan_udp_services $host $(cat udp_open_ports.txt)
 done < alive_hosts.txt
-```
